@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AirPlayStreamer.MainPage">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="25" Padding="30">
+
+            <Label Text="Multi-Room Audio"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <Label Text="Stream YouTube Music to HomePod + Echo Dot"
+                   FontSize="16"
+                   TextColor="Gray"
+                   HorizontalOptions="Center" />
+
+            <!-- Status -->
+            <Frame BackgroundColor="#2d2d2d" Padding="15" CornerRadius="10">
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+                    <Label x:Name="StatusIcon" Text="●" TextColor="Gray" FontSize="16" />
+                    <Label x:Name="StatusLabel" Text="Ready" TextColor="White" FontSize="14" />
+                </HorizontalStackLayout>
+            </Frame>
+
+            <!-- Step 1: AirPlay -->
+            <Frame BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Step 1: HomePod (AirPlay)" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Tap the button below to open the AirPlay picker and select your HomePod."
+                           TextColor="Gray" FontSize="14" />
+
+                    <Button x:Name="AirPlayButton"
+                            Text="🔊 Select AirPlay Device"
+                            Clicked="OnAirPlayClicked"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            FontSize="18"
+                            Padding="20,15" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Step 2: Bluetooth -->
+            <Frame BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Step 2: Echo Dot (Bluetooth)" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Connect your Echo Dot via Bluetooth in System Settings. Say 'Alexa, pair' to put it in pairing mode."
+                           TextColor="Gray" FontSize="14" />
+
+                    <Button x:Name="BluetoothButton"
+                            Text="🎧 Open Bluetooth Settings"
+                            Clicked="OnBluetoothSettingsClicked"
+                            BackgroundColor="#0078D4"
+                            TextColor="White"
+                            FontSize="18"
+                            Padding="20,15" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Step 3: Multi-Output (macOS only) -->
+            <Frame x:Name="MultiOutputSection" BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Step 3: Combine Outputs (macOS)" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Create a Multi-Output Device to play to both HomePod and Echo Dot simultaneously."
+                           TextColor="Gray" FontSize="14" />
+
+                    <Button x:Name="MultiOutputButton"
+                            Text="🔧 Setup Multi-Output Device"
+                            Clicked="OnMultiOutputClicked"
+                            BackgroundColor="#107C10"
+                            TextColor="White"
+                            FontSize="18"
+                            Padding="20,15" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Play Music -->
+            <Frame BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Play Music" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Once your devices are connected, open YouTube Music and enjoy!"
+                           TextColor="Gray" FontSize="14" />
+
+                    <Button x:Name="YouTubeMusicButton"
+                            Text="🎵 Open YouTube Music"
+                            Clicked="OnYouTubeMusicClicked"
+                            BackgroundColor="#FF0000"
+                            TextColor="White"
+                            FontSize="18"
+                            Padding="20,15" />
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

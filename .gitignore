@@ -1,0 +1,39 @@
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+
+# MAUI / Xamarin
+*.ipa
+*.apk
+*.aab
+*.app
+*.dSYM/
+
+# IDE
+.vs/
+.vscode/
+*.swp
+.idea/
+*.DotSettings.user
+
+# macOS
+.DS_Store
+*.xcworkspace/
+*.xcuserdata/
+
+# Build
+publish/
+artifacts/
+
+# Secrets
+*.pfx
+*.snk
+appsettings.*.json
+secrets.json
