@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="0" width="456" height="456" fill="#512BD4" />
+    <!-- Background gradient -->
+    <defs>
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#6366f1"/>
+            <stop offset="100%" style="stop-color:#8b5cf6"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Rounded background -->
+    <rect x="0" y="0" width="456" height="456" rx="90" fill="url(#bgGrad)"/>
+
+    <!-- Speaker/AirPlay icon -->
+    <!-- Left speaker wave -->
+    <path d="M120 180 Q80 228 120 276" stroke="white" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.6"/>
+    <path d="M150 150 Q90 228 150 306" stroke="white" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.4"/>
+
+    <!-- Right speaker wave -->
+    <path d="M336 180 Q376 228 336 276" stroke="white" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.6"/>
+    <path d="M306 150 Q366 228 306 306" stroke="white" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.4"/>
+
+    <!-- Center play triangle (AirPlay style) -->
+    <path d="M228 140 L328 280 L128 280 Z" fill="white"/>
+
+    <!-- Bottom bar -->
+    <rect x="128" y="300" width="200" height="24" rx="12" fill="white"/>
 </svg>
