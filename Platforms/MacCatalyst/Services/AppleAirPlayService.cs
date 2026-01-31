@@ -185,20 +185,52 @@ public class AppleAirPlayService : AirPlayServiceBase
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            var routePickerView = new AVRoutePickerView
+            try
             {
-                Frame = new CoreGraphics.CGRect(0, 0, 40, 40),
-                ActiveTintColor = UIColor.SystemBlue,
-                TintColor = UIColor.Gray
-            };
+                // Get the key window and root view controller
+                var window = UIApplication.SharedApplication.KeyWindow
+                    ?? UIApplication.SharedApplication.Windows.FirstOrDefault(w => w.IsKeyWindow)
+                    ?? UIApplication.SharedApplication.Windows.FirstOrDefault();
 
-            foreach (var subview in routePickerView.Subviews)
-            {
-                if (subview is UIButton button)
+                if (window?.RootViewController?.View == null)
                 {
-                    button.SendActionForControlEvents(UIControlEvent.TouchUpInside);
-                    break;
+                    System.Diagnostics.Debug.WriteLine("[AirPlay] No window available for picker");
+                    return;
                 }
+
+                var rootView = window.RootViewController.View;
+
+                // Create the route picker view
+                var routePickerView = new AVRoutePickerView
+                {
+                    Frame = new CoreGraphics.CGRect(0, 0, 44, 44),
+                    ActiveTintColor = UIColor.SystemBlue,
+                    TintColor = UIColor.White,
+                    Hidden = true // Hide it since we just need to trigger the picker
+                };
+
+                // Add to view hierarchy (required for the picker to work)
+                rootView.AddSubview(routePickerView);
+
+                // Find and trigger the button
+                foreach (var subview in routePickerView.Subviews)
+                {
+                    if (subview is UIButton button)
+                    {
+                        button.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+                        break;
+                    }
+                }
+
+                // Remove after a delay to allow picker to show
+                Task.Delay(500).ContinueWith(_ =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() => routePickerView.RemoveFromSuperview());
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AirPlay] ShowAirPlayPicker error: {ex.Message}");
             }
         });
     }

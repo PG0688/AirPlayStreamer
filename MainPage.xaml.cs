@@ -3,21 +3,36 @@ using System.Diagnostics;
 using AirPlayStreamer.Models;
 using AirPlayStreamer.Services;
 using AirPlayStreamer.ViewModels;
+#if MACCATALYST
+using AirPlayStreamer.Platforms.MacCatalyst.Services;
+#endif
 
 namespace AirPlayStreamer;
 
 public partial class MainPage : ContentPage
 {
     private readonly IAirPlayService _airPlayService;
+#if MACCATALYST
+    private readonly CoreAudioService? _coreAudioService;
+#endif
     private CancellationTokenSource? _discoveryCts;
 
     public ObservableCollection<DeviceViewModel> Devices { get; } = new();
 
+#if MACCATALYST
+    public MainPage(IAirPlayService airPlayService, CoreAudioService coreAudioService)
+    {
+        InitializeComponent();
+        _airPlayService = airPlayService;
+        _coreAudioService = coreAudioService;
+        BindingContext = this;
+#else
     public MainPage(IAirPlayService airPlayService)
     {
         InitializeComponent();
         _airPlayService = airPlayService;
         BindingContext = this;
+#endif
 
         // Subscribe to device changes
         _airPlayService.DevicesChanged += OnDevicesChanged;
@@ -232,20 +247,122 @@ public partial class MainPage : ContentPage
     private async void OnMultiOutputClicked(object sender, EventArgs e)
     {
 #if MACCATALYST
-        UpdateStatus("Opening Audio MIDI Setup...", Colors.Orange);
+        if (_coreAudioService == null)
+        {
+            await DisplayAlert("Error", "Audio service not available.", "OK");
+            return;
+        }
 
-        await RunCommandAsync("open", "-a \"Audio MIDI Setup\"");
+        UpdateStatus("Creating Multi-Output Device...", Colors.Orange);
+        MultiOutputButton.IsEnabled = false;
 
-        await DisplayAlert("Create Multi-Output Device",
-            "In Audio MIDI Setup:\n\n" +
-            "1. Click '+' at bottom left\n" +
-            "2. Select 'Create Multi-Output Device'\n" +
-            "3. Check both your HomePod and Echo Dot\n" +
-            "4. Right-click → 'Use This Device For Sound Output'\n\n" +
-            "Now all audio plays to both speakers!",
-            "OK");
+        try
+        {
+            // Get available audio devices
+            var audioDevices = await _coreAudioService.GetOutputDevicesAsync();
+            var bluetoothDevices = await _coreAudioService.GetBluetoothAudioDevicesAsync();
 
-        UpdateStatus("Multi-Output ready!", Colors.LimeGreen);
+            // Find connected devices to include
+            var devicesToInclude = new List<string>();
+
+            // Add any connected Bluetooth audio devices (like Echo Dot)
+            foreach (var bt in bluetoothDevices.Where(d => d.IsConnected))
+            {
+                devicesToInclude.Add(bt.Name);
+                Debug.WriteLine($"[MultiOutput] Including Bluetooth: {bt.Name}");
+            }
+
+            // Add AirPlay devices if discovered
+            foreach (var airplay in _airPlayService.DiscoveredDevices)
+            {
+                devicesToInclude.Add(airplay.Name);
+                Debug.WriteLine($"[MultiOutput] Including AirPlay: {airplay.Name}");
+            }
+
+            if (devicesToInclude.Count < 2)
+            {
+                // Not enough devices - show device selection
+                var deviceNames = audioDevices.Select(d => d.Name).ToList();
+                deviceNames.AddRange(bluetoothDevices.Where(d => d.IsPaired).Select(d => d.Name));
+
+                if (deviceNames.Count < 2)
+                {
+                    await DisplayAlert("Not Enough Devices",
+                        "Connect at least 2 audio devices:\n" +
+                        "• HomePod via AirPlay (use the picker above)\n" +
+                        "• Echo Dot via Bluetooth\n\n" +
+                        "Then try again.",
+                        "OK");
+                    UpdateStatus("Connect more devices first", Colors.Orange);
+                    return;
+                }
+
+                // Let user select devices manually
+                var selected = await DisplayActionSheet(
+                    "Select first device:",
+                    "Cancel", null,
+                    deviceNames.ToArray());
+
+                if (string.IsNullOrEmpty(selected) || selected == "Cancel")
+                {
+                    UpdateStatus("Cancelled", Colors.Gray);
+                    return;
+                }
+
+                devicesToInclude.Add(selected);
+                deviceNames.Remove(selected);
+
+                var selected2 = await DisplayActionSheet(
+                    "Select second device:",
+                    "Cancel", null,
+                    deviceNames.ToArray());
+
+                if (string.IsNullOrEmpty(selected2) || selected2 == "Cancel")
+                {
+                    UpdateStatus("Cancelled", Colors.Gray);
+                    return;
+                }
+
+                devicesToInclude.Add(selected2);
+            }
+
+            // Create the Multi-Output Device
+            UpdateStatus($"Creating Multi-Output with {devicesToInclude.Count} devices...", Colors.Orange);
+
+            var success = await _coreAudioService.CreateMultiOutputDeviceAsync(
+                "Multi-Room Audio",
+                devicesToInclude);
+
+            if (success)
+            {
+                UpdateStatus("Multi-Output Device ready!", Colors.LimeGreen);
+                await DisplayAlert("Success!",
+                    $"Created 'Multi-Room Audio' combining:\n" +
+                    string.Join("\n", devicesToInclude.Select(d => $"• {d}")) +
+                    "\n\nAll audio will now play to both speakers!",
+                    "OK");
+            }
+            else
+            {
+                // Fallback: Open Audio MIDI Setup with instructions
+                UpdateStatus("Manual setup required", Colors.Orange);
+                await DisplayAlert("Manual Setup Required",
+                    "Audio MIDI Setup will open.\n\n" +
+                    "1. Click '+' → 'Create Multi-Output Device'\n" +
+                    "2. Check your HomePod and Echo Dot\n" +
+                    "3. Right-click → 'Use This Device For Sound Output'",
+                    "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[MultiOutput] Error: {ex.Message}");
+            UpdateStatus($"Error: {ex.Message}", Colors.Red);
+        }
+        finally
+        {
+            MultiOutputButton.IsEnabled = true;
+        }
 #else
         await DisplayAlert("Not Available",
             "Multi-Output Device is only available on macOS.",
