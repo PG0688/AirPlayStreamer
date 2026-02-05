@@ -4,14 +4,14 @@
              x:Class="AirPlayStreamer.MainPage">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="25" Padding="30">
+        <VerticalStackLayout Spacing="20" Padding="30">
 
             <Label Text="Multi-Room Audio"
                    FontSize="32"
                    FontAttributes="Bold"
                    HorizontalOptions="Center" />
 
-            <Label Text="Stream YouTube Music to HomePod + Echo Dot"
+            <Label Text="Stream to HomePod + Echo Dot"
                    FontSize="16"
                    TextColor="Gray"
                    HorizontalOptions="Center" />
@@ -24,73 +24,150 @@
                 </HorizontalStackLayout>
             </Frame>
 
-            <!-- Step 1: AirPlay -->
+            <!-- Discovered Devices Section -->
             <Frame BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Step 1: HomePod (AirPlay)" FontSize="20" FontAttributes="Bold" TextColor="White" />
-                    <Label Text="Tap the button below to open the AirPlay picker and select your HomePod."
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Discovered Devices" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                        <Button x:Name="ScanButton"
+                                Grid.Column="1"
+                                Text="Scan"
+                                Clicked="OnScanClicked"
+                                BackgroundColor="#512BD4"
+                                TextColor="White"
+                                FontSize="14"
+                                Padding="15,8"
+                                CornerRadius="8" />
+                    </Grid>
+
+                    <!-- Loading indicator -->
+                    <HorizontalStackLayout x:Name="ScanningIndicator" IsVisible="False" Spacing="10" HorizontalOptions="Center">
+                        <ActivityIndicator IsRunning="True" Color="#512BD4" HeightRequest="20" WidthRequest="20" />
+                        <Label Text="Scanning for devices..." TextColor="Gray" FontSize="14" />
+                    </HorizontalStackLayout>
+
+                    <!-- Empty state -->
+                    <Label x:Name="NoDevicesLabel"
+                           Text="No devices found. Tap Scan to search."
+                           TextColor="Gray"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           IsVisible="True" />
+
+                    <!-- Device list -->
+                    <CollectionView x:Name="DevicesList"
+                                    ItemsSource="{Binding Devices}"
+                                    SelectionMode="Single"
+                                    SelectionChanged="OnDeviceSelected"
+                                    IsVisible="False">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame BackgroundColor="#2d2d30" Padding="15" Margin="0,5" CornerRadius="10" BorderColor="Transparent">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
+                                        <!-- Device icon -->
+                                        <Frame BackgroundColor="#512BD4"
+                                               WidthRequest="44" HeightRequest="44"
+                                               CornerRadius="22" Padding="0"
+                                               VerticalOptions="Center">
+                                            <Label Text="{Binding DeviceIcon}"
+                                                   FontSize="20"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Frame>
+
+                                        <!-- Device info -->
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                            <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                                            <Label Text="{Binding DeviceTypeDisplay}" FontSize="12" TextColor="Gray" />
+                                        </VerticalStackLayout>
+
+                                        <!-- Status indicator -->
+                                        <Frame Grid.Column="2"
+                                               BackgroundColor="{Binding StatusColor}"
+                                               WidthRequest="12" HeightRequest="12"
+                                               CornerRadius="6" Padding="0"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- AirPlay Picker (Native) -->
+            <Frame BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="AirPlay" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Use the native AirPlay picker to select output devices."
                            TextColor="Gray" FontSize="14" />
 
                     <Button x:Name="AirPlayButton"
-                            Text="🔊 Select AirPlay Device"
+                            Text="Open AirPlay Picker"
                             Clicked="OnAirPlayClicked"
                             BackgroundColor="#512BD4"
                             TextColor="White"
-                            FontSize="18"
-                            Padding="20,15" />
+                            FontSize="16"
+                            Padding="20,12"
+                            CornerRadius="10" />
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Step 2: Bluetooth -->
+            <!-- Bluetooth -->
             <Frame BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Step 2: Echo Dot (Bluetooth)" FontSize="20" FontAttributes="Bold" TextColor="White" />
-                    <Label Text="Connect your Echo Dot via Bluetooth in System Settings. Say 'Alexa, pair' to put it in pairing mode."
+                    <Label Text="Bluetooth" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Connect Echo Dot via Bluetooth. Say 'Alexa, pair' first."
                            TextColor="Gray" FontSize="14" />
 
                     <Button x:Name="BluetoothButton"
-                            Text="🎧 Open Bluetooth Settings"
+                            Text="Open Bluetooth Settings"
                             Clicked="OnBluetoothSettingsClicked"
                             BackgroundColor="#0078D4"
                             TextColor="White"
-                            FontSize="18"
-                            Padding="20,15" />
+                            FontSize="16"
+                            Padding="20,12"
+                            CornerRadius="10" />
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Step 3: Multi-Output (macOS only) -->
+            <!-- Multi-Output (macOS only) -->
             <Frame x:Name="MultiOutputSection" BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Step 3: Combine Outputs (macOS)" FontSize="20" FontAttributes="Bold" TextColor="White" />
-                    <Label Text="Create a Multi-Output Device to play to both HomePod and Echo Dot simultaneously."
+                    <Label Text="Multi-Output (macOS)" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Combine AirPlay + Bluetooth into one output."
                            TextColor="Gray" FontSize="14" />
 
                     <Button x:Name="MultiOutputButton"
-                            Text="🔧 Setup Multi-Output Device"
+                            Text="Setup Multi-Output Device"
                             Clicked="OnMultiOutputClicked"
                             BackgroundColor="#107C10"
                             TextColor="White"
-                            FontSize="18"
-                            Padding="20,15" />
+                            FontSize="16"
+                            Padding="20,12"
+                            CornerRadius="10" />
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Play Music -->
-            <Frame BackgroundColor="#1a1a2e" Padding="20" CornerRadius="15">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="Play Music" FontSize="20" FontAttributes="Bold" TextColor="White" />
-                    <Label Text="Once your devices are connected, open YouTube Music and enjoy!"
-                           TextColor="Gray" FontSize="14" />
+            <!-- Quick Actions -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                <Button Text="YouTube Music"
+                        Clicked="OnYouTubeMusicClicked"
+                        BackgroundColor="#FF0000"
+                        TextColor="White"
+                        FontSize="14"
+                        Padding="15,12"
+                        CornerRadius="10" />
 
-                    <Button x:Name="YouTubeMusicButton"
-                            Text="🎵 Open YouTube Music"
-                            Clicked="OnYouTubeMusicClicked"
-                            BackgroundColor="#FF0000"
-                            TextColor="White"
-                            FontSize="18"
-                            Padding="20,15" />
-                </VerticalStackLayout>
-            </Frame>
+                <Button Grid.Column="1"
+                        Text="System Audio"
+                        Clicked="OnSystemAudioClicked"
+                        BackgroundColor="#6B7280"
+                        TextColor="White"
+                        FontSize="14"
+                        Padding="15,12"
+                        CornerRadius="10" />
+            </Grid>
 
         </VerticalStackLayout>
     </ScrollView>

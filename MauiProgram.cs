@@ -30,6 +30,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAirPlayService, Platforms.iOS.Services.AppleAirPlayService>();
 #elif MACCATALYST
         builder.Services.AddSingleton<IAirPlayService, Platforms.MacCatalyst.Services.AppleAirPlayService>();
+        builder.Services.AddSingleton<Platforms.MacCatalyst.Services.CoreAudioService>();
 #elif ANDROID
         builder.Services.AddSingleton<IAirPlayService, Platforms.Android.Services.AndroidAirPlayService>();
 #elif WINDOWS
